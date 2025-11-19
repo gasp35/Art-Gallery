@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Test PointerLockControls</title>
+    <style>
+        body { margin: 0; overflow: hidden; background: black; }
+        #instructions {
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            color: white;
+            text-align: center;
+            padding: 20px;
+            font-family: sans-serif;
+        }
+    </style>
+</head>
+<body>
+
+<div id="instructions">Cliquez pour activer la caméra FPS</div>
+
+<script src="./three.min.js"></script>
+<script src="./PointerLockControls.js"></script>
+
+<script>
+    console.log("Three.js chargé :", THREE);
+    console.log("PointerLockControls chargé :", THREE.PointerLockControls);
+
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x000000);
+
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.body.appendChild(renderer.domElement);
+
+    // Lumière
+    const light = new THREE.PointLight(0xffffff, 1);
+    light.position.set(10, 10, 10);
+    scene.add(light);
+
+    // Sol
+    const floorGeo = new THREE.PlaneGeometry(200, 200);
+    const floorMat = new THREE.MeshStandardMaterial({ color: 0x444444 });
+    const floor = new THREE.Mesh(floorGeo, floorMat);
+    floor.rotation.x = -Math.PI / 2;
+    scene.add(floor);
+
+    // Caméra FPS
+    const controls = new THREE.PointerLockControls(camera, document.body);
+
+    document.getElementById('instructions').addEventListener('click', () => {
+        controls.lock();
+    });
+
+    controls.addEventListener('lock', () => {
+        document.getElementById('instructions').style.display = 'none';
+    });
+
+    controls.addEventListener('unlock', () => {
+        document.getElementById('instructions').style.display = '';
+    });
+
+    const keys = {};
+    document.addEventListener('keydown', (e) => keys[e.code] = true);
+    document.addEventListener('keyup', (e) => keys[e.code] = false);
+
+    function animate() {
+        requestAnimationFrame(animate);
+
+        if (controls.isLocked) {
+            const speed = 0.05;
+            if (keys["KeyW"]) controls.moveForward(speed);
+            if (keys["KeyS"]) controls.moveForward(-speed);
+            if (keys["KeyA"]) controls.moveRight(-speed);
+            if (keys["KeyD"]) controls.moveRight(speed);
+        }
+
+        renderer.render(scene, camera);
+    }
+
+    animate();
+</script>
+
+</body>
+</html>
